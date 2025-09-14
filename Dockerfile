@@ -33,7 +33,7 @@ RUN apt-get update && apt-get install -y \
     swig \
     libpython3-dev \
     uuid-dev \
-    liblz4-tool \
+    liblz4-dev \
     lzop \
     && rm -rf /var/lib/apt/lists/*
 
