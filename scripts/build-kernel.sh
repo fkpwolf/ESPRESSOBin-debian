@@ -4,7 +4,7 @@ set -e
 
 # Build Linux Kernel for ESPRESSOBin
 
-KERNEL_VERSION="6.6"
+KERNEL_VERSION="6.12"
 KERNEL_DIR="/build/linux"
 OUTPUT_DIR="/build/output"
 
@@ -14,12 +14,12 @@ echo "Building Linux Kernel ${KERNEL_VERSION} for ESPRESSOBin..."
 if [ ! -d "${KERNEL_DIR}" ]; then
     echo "Downloading Linux Kernel ${KERNEL_VERSION}..."
     cd /build
-    # Get the latest stable 6.6.x version
+    # Get the latest longterm 6.12.x version
     KERNEL_FULL_VERSION=$(curl -s https://www.kernel.org/releases.json | python3 -c "
 import sys, json
 data = json.load(sys.stdin)
 for release in data['releases']:
-    if release['version'].startswith('${KERNEL_VERSION}.') and release['moniker'] == 'stable':
+    if release['version'].startswith('${KERNEL_VERSION}.') and release['moniker'] == 'longterm':
         print(release['version'])
         break
 ")
