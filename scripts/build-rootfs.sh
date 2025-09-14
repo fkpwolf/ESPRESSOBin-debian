@@ -15,6 +15,16 @@ echo "Creating Debian ${DEBIAN_VERSION} root filesystem..."
 rm -rf "${ROOTFS_DIR}"
 mkdir -p "${ROOTFS_DIR}"
 
+# Check if QEMU support is available
+echo "Checking QEMU aarch64 support..."
+if [ -f /proc/sys/fs/binfmt_misc/qemu-aarch64 ]; then
+    echo "QEMU aarch64 support is enabled"
+else
+    echo "Warning: QEMU aarch64 support not found. This may cause debootstrap to fail."
+    echo "Available binfmt_misc handlers:"
+    ls -la /proc/sys/fs/binfmt_misc/ || echo "Cannot access binfmt_misc"
+fi
+
 # Bootstrap Debian base system
 echo "Bootstrapping Debian ${DEBIAN_VERSION} arm64..."
 debootstrap --arch=arm64 --include=systemd,udev,kmod,ifupdown,iproute2,iputils-ping,wget,curl,nano,openssh-server,sudo,locales \
