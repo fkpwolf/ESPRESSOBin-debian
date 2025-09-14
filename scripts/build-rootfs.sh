@@ -80,7 +80,8 @@ chown debian:debian /home/debian/.ssh
 
 # Enable systemd services
 systemctl enable systemd-networkd
-systemctl enable systemd-resolved
+# Try to enable systemd-resolved, but don't fail if it doesn't exist
+systemctl enable systemd-resolved || echo "systemd-resolved not available, skipping"
 
 # Install additional useful packages
 apt-get update
