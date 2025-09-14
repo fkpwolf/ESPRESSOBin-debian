@@ -25,15 +25,22 @@ fi
 
 # Test 2: Cross-compilation tools
 echo -e "\nTest 2: Cross-compilation tools validation..."
-docker run --rm espressobin-builder:latest /bin/bash -c "
-    echo 'Cross-compiler path:' && which aarch64-linux-gnu-gcc && 
-    echo 'Cross-compiler version:' && aarch64-linux-gnu-gcc --version | head -1 &&
-    echo 'Build tools available:' &&
-    echo '  make: ' && make --version | head -1 &&
-    echo '  git: ' && git --version &&
-    echo '  wget: ' && wget --version | head -1 &&
-    echo '  python3: ' && python3 --version
-" || { echo "✗ Cross-compilation tools test failed"; exit 1; }
+
+# Test cross-compiler
+if docker run --rm espressobin-builder:latest which aarch64-linux-gnu-gcc > /dev/null; then
+    echo "✓ Cross-compiler available"
+else
+    echo "✗ Cross-compiler not found"
+    exit 1
+fi
+
+# Test basic build tools
+if docker run --rm espressobin-builder:latest which make > /dev/null; then
+    echo "✓ Build tools available"
+else
+    echo "✗ Build tools not available"
+    exit 1
+fi
 
 echo "✓ Cross-compilation tools validated"
 

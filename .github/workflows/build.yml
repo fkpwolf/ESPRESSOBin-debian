@@ -28,23 +28,7 @@ jobs:
         sudo rm -rf /usr/local/share/boost
         df -h
 
-    - name: Build Docker image
-      run: |
-        make build-docker
-
-    - name: Build U-Boot
-      run: |
-        make uboot
-
-    - name: Build Kernel
-      run: |
-        make kernel
-
-    - name: Build Root Filesystem  
-      run: |
-        make rootfs
-
-    - name: Create Final Image
+    - name: Build complete image
       run: |
         make build
 
