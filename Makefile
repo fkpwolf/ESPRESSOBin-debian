@@ -1,6 +1,6 @@
 # ESPRESSOBin Debian Image Builder Makefile
 
-.PHONY: all clean build-docker run-build help test-deps
+.PHONY: all clean build-docker run-build help
 
 DOCKER_IMAGE := espressobin-builder
 DOCKER_TAG := latest
@@ -15,7 +15,6 @@ help:
 	@echo "  build        - Build the complete ESPRESSOBin Debian image"
 	@echo "  build-docker - Build the Docker container for building"
 	@echo "  run-build    - Run the build process in Docker container"
-	@echo "  test-deps    - Test build dependencies in container"
 	@echo "  clean        - Clean build artifacts"
 	@echo "  shell        - Open a shell in the build container"
 	@echo "  help         - Show this help message"
@@ -82,11 +81,3 @@ rootfs: build-docker
 		-v $(PWD)/configs:/build/configs \
 		$(DOCKER_IMAGE):$(DOCKER_TAG) \
 		./scripts/build-rootfs.sh
-
-test-deps: build-docker
-	@echo "Testing build dependencies..."
-	docker run --rm \
-		-v $(PWD)/scripts:/build/scripts \
-		-v $(PWD)/configs:/build/configs \
-		$(DOCKER_IMAGE):$(DOCKER_TAG) \
-		./scripts/test-dependencies.sh

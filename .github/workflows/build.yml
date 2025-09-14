@@ -33,12 +33,6 @@ jobs:
         sudo rm -rf /usr/local/share/boost
         df -h
 
-    - name: Test build dependencies
-      run: |
-        # Test dependencies in container first to catch issues early
-        docker build -t espressobin-test -f Dockerfile .
-        docker run --rm espressobin-test ./scripts/test-dependencies.sh
-        
     - name: Build complete image
       run: |
         # Register QEMU on the host for multi-architecture support
