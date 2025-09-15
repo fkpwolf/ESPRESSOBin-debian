@@ -37,6 +37,15 @@ cp /usr/bin/qemu-aarch64-static "${ROOTFS_DIR}/usr/bin/"
 chroot "${ROOTFS_DIR}" /bin/bash << 'EOF'
 set -e
 
+# Set environment variables to prevent Python bytecode compilation issues
+export PYTHONDONTWRITEBYTECODE=1
+export DEB_PYTHON_INSTALL_LAYOUT=deb_system
+export DEBIAN_FRONTEND=noninteractive
+
+# Set up temporary /proc and /sys to help with systemd in chroot
+mount -t proc proc /proc || true
+mount -t sysfs sysfs /sys || true
+
 # Configure locales
 echo "en_US.UTF-8 UTF-8" > /etc/locale.gen
 locale-gen
@@ -85,7 +94,9 @@ systemctl enable systemd-resolved || echo "systemd-resolved not available, skipp
 
 # Install additional useful packages
 apt-get update
-apt-get install -y \
+
+# Install packages in smaller batches to avoid issues
+apt-get install -y --no-install-recommends \
     firmware-linux-free \
     wireless-tools \
     wpasupplicant \
@@ -93,10 +104,22 @@ apt-get install -y \
     htop \
     vim \
     git \
-    build-essential \
-    python3 \
-    python3-pip \
     ca-certificates
+
+# Install build tools separately
+apt-get install -y --no-install-recommends \
+    build-essential
+
+# Install Python packages with special handling for pip
+DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+    python3
+
+# Try to install python3-pip, but don't fail if it has issues
+DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends python3-pip || {
+    echo "Warning: python3-pip installation failed, continuing without it"
+    # Force configure any partially installed packages
+    dpkg --configure -a || true
+}
 
 # Configure systemd for embedded system
 systemctl mask systemd-logind.service
@@ -112,6 +135,10 @@ systemctl enable serial-getty@ttyMV0.service
 # Clean package cache
 apt-get clean
 rm -rf /var/lib/apt/lists/*
+
+# Cleanup temporary mounts
+umount /proc || true
+umount /sys || true
 
 EOF
 
