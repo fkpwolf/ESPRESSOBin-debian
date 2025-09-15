@@ -43,6 +43,8 @@ jobs:
       run: |
         ls -la output/
         du -sh output/*
+        echo "U-Boot files:"
+        ls -la output/u-boot/ || echo "No U-Boot directory found"
 
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4
@@ -53,6 +55,7 @@ jobs:
           output/espressobin-debian.img.sha256
           output/espressobin-debian.img.gz.sha256
           output/FLASH_INSTRUCTIONS.txt
+          output/u-boot/
         retention-days: 30
 
     - name: Upload to release (if release)
@@ -65,6 +68,29 @@ jobs:
         asset_path: output/espressobin-debian.img.gz
         asset_name: espressobin-debian-${{ github.event.release.tag_name }}.img.gz
         asset_content_type: application/gzip
+
+    - name: Upload U-Boot binary to release (if release)
+      if: github.event_name == 'release'
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ github.event.release.upload_url }}
+        asset_path: output/u-boot/u-boot.bin
+        asset_name: u-boot-${{ github.event.release.tag_name }}.bin
+        asset_content_type: application/octet-stream
+
+    - name: Upload flash image to release (if release and exists)
+      if: github.event_name == 'release'
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ github.event.release.upload_url }}
+        asset_path: output/u-boot/flash-image.bin
+        asset_name: flash-image-${{ github.event.release.tag_name }}.bin
+        asset_content_type: application/octet-stream
+      continue-on-error: true
 
   test:
     runs-on: ubuntu-latest
