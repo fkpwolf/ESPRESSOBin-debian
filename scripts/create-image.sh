@@ -82,12 +82,38 @@ Files included:
 - u-boot/: U-Boot bootloader files
 - kernel/: Linux kernel files
 
-To flash the image to microSD card:
+=== FLASHING TO MICROSD CARD ===
+
 1. Extract the compressed image:
    gunzip espressobin-debian.img.gz
 
 2. Flash to microSD card (replace /dev/sdX with your SD card device):
    sudo dd if=espressobin-debian.img of=/dev/sdX bs=4M status=progress oflag=sync
+
+3. Insert microSD card into ESPRESSOBin and boot
+
+=== FLASHING TO eMMC MODULE ===
+
+WARNING: Flashing to eMMC will permanently overwrite existing data!
+
+Prerequisites:
+- ESPRESSOBin with eMMC module installed  
+- Working boot environment (microSD or U-Boot via network/USB)
+- Serial console access (115200 8N1)
+
+Method 1 - Direct flash from running Linux:
+1. Check if eMMC is detected: lsblk (look for mmcblk1)
+2. Extract: gunzip espressobin-debian.img.gz  
+3. Flash: sudo dd if=espressobin-debian.img of=/dev/mmcblk1 bs=4M status=progress oflag=sync
+4. Configure U-Boot to boot from eMMC (see README.md)
+
+Method 2 - Flash via U-Boot console:
+1. Load image via TFTP: tftp $loadaddr espressobin-debian.img
+2. Select eMMC: mmc dev 1
+3. Flash: mmc write $loadaddr 0 $filesize
+4. Configure boot environment for eMMC
+
+=== U-BOOT SPI FLASH UPDATE ===
 
 3. Flash U-Boot to SPI flash (if needed):
    - Connect to ESPRESSOBin via serial console
@@ -104,6 +130,8 @@ Serial console: 115200 8N1 on microUSB connector
 Network: DHCP enabled on eth0
 
 First boot may take several minutes to complete initial setup.
+
+For detailed instructions and troubleshooting, see README.md
 INSTRUCTIONS
 
 echo "========================================"

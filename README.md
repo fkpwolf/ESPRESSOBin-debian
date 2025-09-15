@@ -80,6 +80,74 @@ After successful build, the `output/` directory contains:
 
 3. Insert microSD card into ESPRESSOBin and boot
 
+### To eMMC module:
+
+**⚠️ WARNING: Flashing to eMMC will permanently overwrite existing data. Ensure you have backups if needed.**
+
+If your ESPRESSOBin has an eMMC module installed, you can flash directly to it for better performance and reliability:
+
+1. **Prerequisites:**
+   - ESPRESSOBin with eMMC module installed
+   - Working boot environment (microSD with working system or U-Boot via TFTP/USB)
+   - Serial console access (115200 8N1)
+
+2. **Detect eMMC module:**
+   Boot your ESPRESSOBin and check if eMMC is detected:
+   ```bash
+   # Check if eMMC is present
+   lsblk
+   # Look for mmcblk1 (eMMC) - mmcblk0 is typically microSD
+   
+   # Or check dmesg for eMMC detection
+   dmesg | grep -i mmc
+   ```
+
+3. **Flash the image:**
+   
+   **Method 1: Direct flash from running Linux system**
+   ```bash
+   # Extract the image
+   gunzip espressobin-debian.img.gz
+   
+   # Flash to eMMC (usually /dev/mmcblk1)
+   sudo dd if=espressobin-debian.img of=/dev/mmcblk1 bs=4M status=progress oflag=sync
+   
+   # Verify the flash
+   sudo sync
+   ```
+   
+   **Method 2: Flash via U-Boot console**
+   ```bash
+   # Boot to U-Boot prompt and load image via TFTP or USB
+   # Example using TFTP:
+   setenv serverip 192.168.1.100
+   setenv ipaddr 192.168.1.50
+   tftp $loadaddr espressobin-debian.img
+   
+   # Flash to eMMC
+   mmc dev 1  # Select eMMC device
+   mmc write $loadaddr 0 $filesize
+   
+   # Example using USB:
+   usb start
+   fatload usb 0 $loadaddr espressobin-debian.img
+   mmc dev 1
+   mmc write $loadaddr 0 $filesize
+   ```
+
+4. **Configure boot from eMMC:**
+   Update U-Boot environment to boot from eMMC:
+   ```bash
+   # In U-Boot console:
+   setenv bootcmd 'setenv bootargs "console=ttyMV0,115200 earlycon=ar3700_uart,0xd0012000 root=/dev/mmcblk1p1 rootfstype=ext4 rootwait net.ifnames=0"; ext4load mmc 1:1 $kernel_addr_r /boot/Image; ext4load mmc 1:1 $fdt_addr_r /boot/dtbs/armada-3720-espressobin.dtb; booti $kernel_addr_r - $fdt_addr_r'
+   saveenv
+   ```
+
+5. **Remove microSD and reboot:**
+   - Power off the ESPRESSOBin
+   - Remove any microSD card
+   - Power on - system should now boot from eMMC
+
 ### U-Boot to SPI Flash (optional):
 
 If you need to update the SPI flash with new U-Boot:
@@ -114,6 +182,7 @@ If you need to update the SPI flash with new U-Boot:
 - ✅ USB 3.0 and USB 2.0 ports
 - ✅ SATA 3.0 connector
 - ✅ microSD card slot
+- ✅ eMMC module support (if installed)
 - ✅ SPI flash (for bootloader)
 - ✅ GPIO expansion headers
 - ✅ I2C, SPI, UART interfaces
@@ -150,6 +219,13 @@ Modify `scripts/build-rootfs.sh` to customize the Debian installation.
 - Verify DHCP server is available
 - Check switch configuration (if using managed network)
 
+### eMMC Issues:
+- Verify eMMC module is properly installed and detected: `lsblk` or `dmesg | grep mmc`
+- Check that eMMC device appears as `/dev/mmcblk1` (microSD is typically `/dev/mmcblk0`)
+- Ensure U-Boot environment is configured for eMMC boot (see eMMC flashing instructions)
+- If eMMC fails to boot, try booting from microSD and reflashing eMMC
+- For persistent eMMC boot issues, check boot switches and U-Boot configuration
+
 ## Contributing
 
 1. Fork the repository
@@ -167,7 +243,7 @@ This project is released under the MIT License. See individual component license
 The ESPRESSOBin is an ARM64 development board featuring:
 - **SoC:** Marvell Armada 3720 (dual-core ARM Cortex-A53)
 - **RAM:** 1GB or 2GB DDR3
-- **Storage:** microSD slot + SPI flash + SATA connector
+- **Storage:** microSD slot + optional eMMC module + SPI flash + SATA connector
 - **Network:** 3x Gigabit Ethernet via Topaz switch
 - **Connectivity:** USB 3.0, USB 2.0, mini-PCIe
 - **Expansion:** 46-pin GPIO header
