@@ -3,7 +3,7 @@
 This project builds a complete Debian 13 (Trixie) ARM64 image for the ESPRESSOBin single-board computer, featuring:
 
 - **Debian 13 (Trixie)** ARM64 base system
-- **Latest stable LTS Linux kernel** (6.6.x series) with ESPRESSOBin support
+- **Latest stable LTS Linux kernel** (6.12.x series) with ESPRESSOBin support
 - **Latest U-Boot bootloader** (2024.01) with proper ESPRESSOBin configuration
 - **ARM Trusted Firmware** for secure boot
 - **Complete embedded Linux system** ready to flash and boot
@@ -139,7 +139,7 @@ If your ESPRESSOBin has an eMMC module installed, you can flash directly to it f
    Update U-Boot environment to boot from eMMC:
    ```bash
    # In U-Boot console:
-   setenv bootcmd 'setenv bootargs "console=ttyMV0,115200 earlycon=ar3700_uart,0xd0012000 root=/dev/mmcblk1p1 rootfstype=ext4 rootwait net.ifnames=0"; ext4load mmc 1:1 $kernel_addr_r /boot/Image; ext4load mmc 1:1 $fdt_addr_r /boot/dtbs/armada-3720-espressobin.dtb; booti $kernel_addr_r - $fdt_addr_r'
+   setenv bootcmd 'setenv bootargs "console=ttyMV0,115200 earlycon=ar3700_uart,0xd0012000 root=/dev/mmcblk1p1 rootfstype=ext4 rootwait net.ifnames=0"; ext4load mmc 1:1 $kernel_addr_r /boot/Image; ext4load mmc 1:1 $fdt_addr_r /boot/dtbs/armada-3720-espressobin-emmc.dtb; booti $kernel_addr_r - $fdt_addr_r'
    saveenv
    ```
 

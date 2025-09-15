@@ -7,7 +7,7 @@ set -e
 
 # Configuration
 DEBIAN_VERSION="trixie"  # Debian 13
-KERNEL_VERSION="6.6"     # Latest stable LTS
+KERNEL_VERSION="6.12"     # Latest stable LTS
 UBOOT_VERSION="2024.01"  # Latest stable u-boot
 ARCH="arm64"
 CROSS_COMPILE="aarch64-linux-gnu-"
