@@ -172,13 +172,25 @@ If you need to update the SPI flash with new U-Boot:
 ### Network Configuration:
 - DHCP enabled on eth0
 - SSH server enabled (port 22)
+- **Switch Configuration:** The ESPRESSOBin features a built-in Marvell 88E6341 Topaz switch with 3 Gigabit Ethernet ports:
+  - `wan`: Connects to internet/WAN (closest to power connector)
+  - `lan0`: LAN port 1 (middle port)
+  - `lan1`: LAN port 2 (closest to USB ports)
+- DSA (Distributed Switch Architecture) provides full switch functionality
+- Each port appears as a separate network interface (wan, lan0, lan1)
+- VLAN support available for network segmentation
 
 ### Serial Console:
 - **Baud rate:** 115200 8N1
 - **Connector:** microUSB port on ESPRESSOBin
 
 ### Hardware Support:
-- ✅ Gigabit Ethernet (3 ports via switch)
+- ✅ **Gigabit Ethernet (3 ports via Marvell 88E6341 Topaz switch)**
+  - Port wan: WAN/Internet connection
+  - Port lan0: LAN port 1
+  - Port lan1: LAN port 2
+  - Full DSA (Distributed Switch Architecture) support
+  - VLAN support and port isolation
 - ✅ USB 3.0 and USB 2.0 ports
 - ✅ SATA 3.0 connector
 - ✅ microSD card slot
@@ -217,7 +229,12 @@ Modify `scripts/build-rootfs.sh` to customize the Debian installation.
 ### Network Issues:
 - Check Ethernet cable connections
 - Verify DHCP server is available
-- Check switch configuration (if using managed network)
+- Check switch configuration: `ip link show` should display wan, lan0, lan1 interfaces
+- **Switch troubleshooting:**
+  - If switch ports don't appear, check kernel logs: `dmesg | grep -i dsa`
+  - Verify switch chip detection: `dmesg | grep -i 88e6341`
+  - Configure switch ports: `ip link set wan up`, `ip link set lan0 up`, `ip link set lan1 up`
+  - Check port status: `cat /sys/class/net/*/operstate`
 
 ### eMMC Issues:
 - Verify eMMC module is properly installed and detected: `lsblk` or `dmesg | grep mmc`
