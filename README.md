@@ -152,16 +152,50 @@ If your ESPRESSOBin has an eMMC module installed, you can flash directly to it f
 
 If you need to update the SPI flash with new U-Boot:
 
+**⚠️ IMPORTANT:** The ESPRESSOBin's `bubt` command has specific image format requirements. If you encounter "Unsupported Image version" errors, try the alternative methods below.
+
+#### Method 1: Using bubt command (recommended for newer U-Boot):
+
 1. Copy `output/u-boot/flash-image.bin` to TFTP server or FAT32 USB drive
 2. Boot ESPRESSOBin and access U-Boot console
-3. Load the file and flash:
+3. Flash using bubt command:
+   ```bash
+   # Via USB:
+   bubt flash-image.bin spi usb
+   
+   # Via TFTP:
+   bubt flash-image.bin spi tftp
    ```
-   sf probe
-   sf erase 0 +200000
-   # Load via TFTP: tftp $loadaddr flash-image.bin
-   # Or via USB: fatload usb 0 $loadaddr flash-image.bin
-   sf write $loadaddr 0 $filesize
-   ```
+
+#### Method 2: If bubt fails with "Unsupported Image version":
+
+Try using the U-Boot-only binary instead:
+```bash
+# Via USB:
+bubt u-boot-spi.bin spi usb
+
+# Via TFTP:
+bubt u-boot-spi.bin spi tftp
+```
+
+#### Method 3: Manual SPI flashing (fallback method):
+
+For older U-Boot versions or if bubt command fails:
+```bash
+sf probe
+sf erase 0 +200000
+# Load via TFTP: tftp $loadaddr flash-image.bin
+# Or via USB: fatload usb 0 $loadaddr flash-image.bin
+sf write $loadaddr 0 $filesize
+```
+
+#### Available Flash Images:
+
+After building, the following files are available in `output/u-boot/`:
+- `flash-image.bin` - Complete ATF+U-Boot image (primary option)
+- `u-boot-spi.bin` - U-Boot only binary (alternative if bubt has issues)  
+- `bl1.bin` - ARM Trusted Firmware BL1 (for manual flashing)
+- `fip.bin` - Firmware Image Package (for manual flashing)
 
 ## System Details
 

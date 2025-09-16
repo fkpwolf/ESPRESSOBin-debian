@@ -1,0 +1,100 @@
+ESPRESSOBin U-Boot Flashing Instructions
+========================================
+
+This document provides detailed instructions for flashing U-Boot to the ESPRESSOBin's SPI flash.
+
+ISSUE CONTEXT:
+If you encounter "Error: Unsupported Image version = 0xd2810600" when using the bubt command,
+this is because the bubt command has specific image format requirements that vary between
+different U-Boot versions and configurations.
+
+AVAILABLE FILES:
+================
+- flash-image.bin     : Complete ATF+U-Boot image (recommended for most cases)
+- u-boot-spi.bin      : U-Boot only binary (alternative if bubt has header issues)
+- bl1.bin            : ARM Trusted Firmware BL1 (for manual flashing)
+- fip.bin            : Firmware Image Package (for manual flashing)
+
+FLASHING METHODS:
+================
+
+METHOD 1: Using bubt command (preferred):
+-----------------------------------------
+1. Copy flash-image.bin to a FAT32 formatted USB drive or TFTP server
+2. Boot ESPRESSOBin and interrupt boot to get to U-Boot prompt
+3. Try flashing with bubt command:
+
+   Via USB:
+   Marvell>> bubt flash-image.bin spi usb
+
+   Via TFTP (set your network parameters first):
+   Marvell>> setenv ipaddr 192.168.1.100
+   Marvell>> setenv serverip 192.168.1.50
+   Marvell>> bubt flash-image.bin spi tftp
+
+METHOD 2: If bubt fails with "Unsupported Image version":
+---------------------------------------------------------
+Try using the U-Boot-only binary instead:
+
+   Via USB:
+   Marvell>> bubt u-boot-spi.bin spi usb
+
+   Via TFTP:
+   Marvell>> bubt u-boot-spi.bin spi tftp
+
+METHOD 3: Manual SPI flash commands (fallback):
+-----------------------------------------------
+If bubt command continues to fail, use direct SPI flash commands:
+
+1. Copy flash-image.bin to USB drive or TFTP server
+2. In U-Boot console:
+
+   # Probe SPI flash
+   Marvell>> sf probe
+
+   # Erase SPI flash (first 2MB should be enough)
+   Marvell>> sf erase 0 +200000
+
+   # Load image to memory
+   # Via USB:
+   Marvell>> fatload usb 0 $loadaddr flash-image.bin
+   
+   # Via TFTP:
+   Marvell>> tftp $loadaddr flash-image.bin
+
+   # Write to SPI flash
+   Marvell>> sf write $loadaddr 0 $filesize
+
+METHOD 4: Component-by-component flashing:
+------------------------------------------
+For advanced users, you can flash ATF and U-Boot separately:
+
+1. Flash ARM Trusted Firmware BL1:
+   Marvell>> fatload usb 0 $loadaddr bl1.bin
+   Marvell>> sf write $loadaddr 0 $filesize
+
+2. Flash FIP (contains U-Boot):
+   Marvell>> fatload usb 0 $loadaddr fip.bin
+   Marvell>> sf write $loadaddr 4800 $filesize
+
+TROUBLESHOOTING:
+===============
+- If you get "Unsupported Image version" error, try u-boot-spi.bin instead
+- Make sure your USB drive is formatted as FAT32
+- Ensure files are in the root directory of the USB drive
+- For TFTP, make sure your TFTP server is accessible and files are in the correct directory
+- If SPI probe fails, check your hardware connections
+
+VERIFICATION:
+============
+After flashing, reset the board and verify boot:
+Marvell>> reset
+
+You should see the new U-Boot version information during boot.
+
+RECOVERY:
+========
+If the board fails to boot after flashing:
+1. Use UART recovery mode if available
+2. Flash a known working U-Boot image
+3. Contact ESPRESSOBin support for hardware recovery options
