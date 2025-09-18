@@ -88,19 +88,6 @@ systemctl enable ssh
 mkdir -p /home/debian/.ssh
 chown debian:debian /home/debian/.ssh
 
-# Configure systemd-timesyncd for time synchronization
-systemctl enable systemd-timesyncd
-# Create timesyncd configuration
-mkdir -p /etc/systemd/timesyncd.conf.d
-cat > /etc/systemd/timesyncd.conf.d/espressobin.conf << TIMESYNCDCONF
-[Time]
-NTP=0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org 3.pool.ntp.org
-FallbackNTP=time.nist.gov time.google.com
-RootDistanceMaxSec=5
-PollIntervalMinSec=32
-PollIntervalMaxSec=2048
-TIMESYNCDCONF
-
 # Ensure mv88e6xxx driver is available
 # Create modules-load configuration to ensure switch driver is loaded
 mkdir -p /etc/modules-load.d
@@ -127,7 +114,8 @@ apt-get install -y --no-install-recommends \
     htop \
     vim \
     git \
-    ca-certificates
+    ca-certificates \
+    systemd-timesyncd
 
 # Install build tools separately
 apt-get install -y --no-install-recommends \
@@ -143,6 +131,9 @@ DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends python
     # Force configure any partially installed packages
     dpkg --configure -a || true
 }
+
+# Configure systemd-timesyncd for time synchronization
+systemctl enable systemd-timesyncd
 
 # Configure systemd for embedded system
 systemctl mask systemd-logind.service

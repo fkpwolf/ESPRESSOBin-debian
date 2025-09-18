@@ -170,10 +170,8 @@ If you need to update the SPI flash with new U-Boot:
 - Root password: `root`
 
 ### Network Configuration:
-- DHCP disabled on eth0 (manual configuration required)
-- Network Manager available for network management
+- DHCP enabled on eth0
 - SSH server enabled (port 22)
-- **systemd-timesyncd time synchronization enabled** with pool.ntp.org servers
 - **Switch Configuration:** The ESPRESSOBin features a built-in Marvell 88E6341 Topaz switch with 3 Gigabit Ethernet ports:
   - `wan`: Connects to internet/WAN (closest to power connector)
   - `lan0`: LAN port 1 (middle port)
@@ -217,40 +215,6 @@ Add custom U-Boot options in `configs/uboot.config`.
 ### Root Filesystem:
 Modify `scripts/build-rootfs.sh` to customize the Debian installation.
 
-### Post-Installation Network Configuration:
-Since DHCP is disabled on eth0, you'll need to configure networking manually:
-
-1. **Using Network Manager (recommended):**
-   ```bash
-   sudo nmcli connection add type ethernet con-name ethernet ifname eth0
-   sudo nmcli connection modify ethernet ipv4.addresses 192.168.1.10/24
-   sudo nmcli connection modify ethernet ipv4.gateway 192.168.1.1
-   sudo nmcli connection modify ethernet ipv4.dns 8.8.8.8
-   sudo nmcli connection modify ethernet ipv4.method manual
-   sudo nmcli connection up ethernet
-   ```
-
-2. **Using /etc/network/interfaces:**
-   ```bash
-   sudo nano /etc/network/interfaces
-   ```
-   Add:
-   ```
-   auto eth0
-   iface eth0 inet static
-       address 192.168.1.10/24
-       gateway 192.168.1.1
-       dns-nameservers 8.8.8.8 8.8.4.4
-   ```
-
-3. **systemd-timesyncd time synchronization:**
-   systemd-timesyncd is configured automatically with pool.ntp.org servers. Check status:
-   ```bash
-   sudo systemctl status systemd-timesyncd
-   timedatectl status
-   timedatectl show-timesync
-   ```
-
 ## Troubleshooting
 
 ### Build Issues:
@@ -265,19 +229,13 @@ Since DHCP is disabled on eth0, you'll need to configure networking manually:
 
 ### Network Issues:
 - Check Ethernet cable connections
-- **Note: DHCP is disabled by default** - configure network manually (see Post-Installation Network Configuration above)
-- Verify network configuration with `ip addr show` and `ip route show`
+- Verify DHCP server is available
 - Check switch configuration: `ip link show` should display wan, lan0, lan1 interfaces
 - **Switch troubleshooting:**
   - If switch ports don't appear, check kernel logs: `dmesg | grep -i dsa`
   - Verify switch chip detection: `dmesg | grep -i 88e6341`
   - Configure switch ports: `ip link set wan up`, `ip link set lan0 up`, `ip link set lan1 up`
   - Check port status: `cat /sys/class/net/*/operstate`
-- **Time synchronization issues:**
-  - Check systemd-timesyncd status: `systemctl status systemd-timesyncd`
-  - View time sync status: `timedatectl status`
-  - Check time sync details: `timedatectl show-timesync`
-  - Manual time sync: `sudo systemctl restart systemd-timesyncd`
 
 ### eMMC Issues:
 - Verify eMMC module is properly installed and detected: `lsblk` or `dmesg | grep mmc`
