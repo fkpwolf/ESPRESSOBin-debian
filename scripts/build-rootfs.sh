@@ -88,34 +88,18 @@ systemctl enable ssh
 mkdir -p /home/debian/.ssh
 chown debian:debian /home/debian/.ssh
 
-# Configure NTP for time synchronization
-systemctl enable ntp
-# Create basic NTP configuration
-cat > /etc/ntp.conf << NTPCONF
-# Basic NTP configuration for ESPRESSOBin
-driftfile /var/lib/ntp/ntp.drift
-statistics loopstats peerstats clockstats
-filegen loopstats file loopstats type day enable
-filegen peerstats file peerstats type day enable
-filegen clockstats file clockstats type day enable
-
-# Default NTP servers (replace with your preferred ones)
-server 0.pool.ntp.org
-server 1.pool.ntp.org
-server 2.pool.ntp.org
-server 3.pool.ntp.org
-
-# Fallback to local clock
-server 127.127.1.0
-fudge 127.127.1.0 stratum 10
-
-# Security settings
-restrict -4 default kod notrap nomodify nopeer noquery limited
-restrict -6 default kod notrap nomodify nopeer noquery limited
-restrict 127.0.0.1
-restrict ::1
-restrict source notrap nomodify noquery
-NTPCONF
+# Configure systemd-timesyncd for time synchronization
+systemctl enable systemd-timesyncd
+# Create timesyncd configuration
+mkdir -p /etc/systemd/timesyncd.conf.d
+cat > /etc/systemd/timesyncd.conf.d/espressobin.conf << TIMESYNCDCONF
+[Time]
+NTP=0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org 3.pool.ntp.org
+FallbackNTP=time.nist.gov time.google.com
+RootDistanceMaxSec=5
+PollIntervalMinSec=32
+PollIntervalMaxSec=2048
+TIMESYNCDCONF
 
 # Ensure mv88e6xxx driver is available
 # Create modules-load configuration to ensure switch driver is loaded
@@ -143,9 +127,7 @@ apt-get install -y --no-install-recommends \
     htop \
     vim \
     git \
-    ca-certificates \
-    ntp \
-    ntpdate
+    ca-certificates
 
 # Install build tools separately
 apt-get install -y --no-install-recommends \

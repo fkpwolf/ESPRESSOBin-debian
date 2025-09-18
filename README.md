@@ -173,7 +173,7 @@ If you need to update the SPI flash with new U-Boot:
 - DHCP disabled on eth0 (manual configuration required)
 - Network Manager available for network management
 - SSH server enabled (port 22)
-- **NTP time synchronization enabled** with pool.ntp.org servers
+- **systemd-timesyncd time synchronization enabled** with pool.ntp.org servers
 - **Switch Configuration:** The ESPRESSOBin features a built-in Marvell 88E6341 Topaz switch with 3 Gigabit Ethernet ports:
   - `wan`: Connects to internet/WAN (closest to power connector)
   - `lan0`: LAN port 1 (middle port)
@@ -243,11 +243,12 @@ Since DHCP is disabled on eth0, you'll need to configure networking manually:
        dns-nameservers 8.8.8.8 8.8.4.4
    ```
 
-3. **NTP time synchronization:**
-   NTP is configured automatically with pool.ntp.org servers. Check status:
+3. **systemd-timesyncd time synchronization:**
+   systemd-timesyncd is configured automatically with pool.ntp.org servers. Check status:
    ```bash
-   sudo systemctl status ntp
-   ntpq -p
+   sudo systemctl status systemd-timesyncd
+   timedatectl status
+   timedatectl show-timesync
    ```
 
 ## Troubleshooting
@@ -273,9 +274,10 @@ Since DHCP is disabled on eth0, you'll need to configure networking manually:
   - Configure switch ports: `ip link set wan up`, `ip link set lan0 up`, `ip link set lan1 up`
   - Check port status: `cat /sys/class/net/*/operstate`
 - **Time synchronization issues:**
-  - Check NTP status: `systemctl status ntp`
-  - View NTP peers: `ntpq -p`
-  - Manual time sync: `sudo ntpdate pool.ntp.org`
+  - Check systemd-timesyncd status: `systemctl status systemd-timesyncd`
+  - View time sync status: `timedatectl status`
+  - Check time sync details: `timedatectl show-timesync`
+  - Manual time sync: `sudo systemctl restart systemd-timesyncd`
 
 ### eMMC Issues:
 - Verify eMMC module is properly installed and detected: `lsblk` or `dmesg | grep mmc`
