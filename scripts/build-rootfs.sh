@@ -72,9 +72,10 @@ cat > /etc/network/interfaces << INTERFACES
 auto lo
 iface lo inet loopback
 
-# The primary network interface
+# The primary network interface (DHCP disabled)
+# Configure manually or use network-manager
 auto eth0
-iface eth0 inet dhcp
+iface eth0 inet manual
 INTERFACES
 
 # Create a default user
@@ -86,6 +87,15 @@ echo "root:root" | chpasswd
 systemctl enable ssh
 mkdir -p /home/debian/.ssh
 chown debian:debian /home/debian/.ssh
+
+# Ensure mv88e6xxx driver is available
+# Create modules-load configuration to ensure switch driver is loaded
+mkdir -p /etc/modules-load.d
+cat > /etc/modules-load.d/espressobin.conf << MODULES
+# ESPRESSOBin specific modules
+# DSA switch support (mv88e6xxx is built-in but ensure dependencies are loaded)
+mv88e6xxx
+MODULES
 
 # Enable systemd services
 systemctl enable systemd-networkd
@@ -104,7 +114,8 @@ apt-get install -y --no-install-recommends \
     htop \
     vim \
     git \
-    ca-certificates
+    ca-certificates \
+    systemd-timesyncd
 
 # Install build tools separately
 apt-get install -y --no-install-recommends \
@@ -120,6 +131,9 @@ DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends python
     # Force configure any partially installed packages
     dpkg --configure -a || true
 }
+
+# Configure systemd-timesyncd for time synchronization
+systemctl enable systemd-timesyncd
 
 # Configure systemd for embedded system
 systemctl mask systemd-logind.service

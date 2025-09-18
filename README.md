@@ -177,6 +177,7 @@ If you need to update the SPI flash with new U-Boot:
   - `lan0`: LAN port 1 (middle port)
   - `lan1`: LAN port 2 (closest to USB ports)
 - DSA (Distributed Switch Architecture) provides full switch functionality
+- **mv88e6xxx driver enabled** for full switch support
 - Each port appears as a separate network interface (wan, lan0, lan1)
 - VLAN support available for network segmentation
 
