@@ -139,7 +139,7 @@ If your ESPRESSOBin has an eMMC module installed, you can flash directly to it f
    Update U-Boot environment to boot from eMMC:
    ```bash
    # In U-Boot console:
-   setenv bootcmd 'setenv bootargs "console=ttyMV0,115200 earlycon=ar3700_uart,0xd0012000 root=/dev/mmcblk1p1 rootfstype=ext4 rootwait net.ifnames=0"; ext4load mmc 1:1 $kernel_addr_r /boot/Image; ext4load mmc 1:1 $fdt_addr_r /boot/dtbs/armada-3720-espressobin-emmc.dtb; booti $kernel_addr_r - $fdt_addr_r'
+   setenv bootcmd 'setenv bootargs "console=ttyMV0,115200 earlycon=ar3700_uart,0xd0012000 root=/dev/mmcblk1p1 rootfstype=ext4 rootwait net.ifnames=0 pci=nomsi"; ext4load mmc 1:1 $kernel_addr_r /boot/Image; ext4load mmc 1:1 $fdt_addr_r /boot/dtbs/armada-3720-espressobin-emmc.dtb; booti $kernel_addr_r - $fdt_addr_r'
    saveenv
    ```
 
@@ -196,6 +196,8 @@ If you need to update the SPI flash with new U-Boot:
   - Qualcomm Atheros AR93xx (ath9k driver)
   - MediaTek MT7922 802.11ax (mt7921e driver)
   - Firmware packages included (firmware-atheros, firmware-misc-nonfree)
+  - **Correct Aardvark PCIe driver configured for Armada 3720**
+  - **MSI workaround (pci=nomsi) included for PCIe stability**
 - ✅ USB 3.0 and USB 2.0 ports
 - ✅ SATA 3.0 connector
 - ✅ microSD card slot
@@ -247,6 +249,23 @@ Modify `scripts/build-rootfs.sh` to customize the Debian installation.
 - Ensure U-Boot environment is configured for eMMC boot (see eMMC flashing instructions)
 - If eMMC fails to boot, try booting from microSD and reflashing eMMC
 - For persistent eMMC boot issues, check boot switches and U-Boot configuration
+
+### WiFi Issues (Mini-PCIe Slot):
+- **PCIe driver configuration**: This build uses the correct Aardvark PCIe driver (`CONFIG_PCI_AARDVARK`) for Armada 3720 SoC
+- **MSI workaround**: The `pci=nomsi` kernel parameter is included by default to work around MSI interrupt issues on Armada 3720 PCIe
+- **Check WiFi card detection**:
+  - Verify PCIe device is detected: `lspci` should show your WiFi card
+  - Check kernel logs: `dmesg | grep -i pcie` and `dmesg | grep -i ath9k`
+  - Ensure firmware is installed: `dpkg -l | grep firmware-atheros`
+- **Common issues**:
+  - If you get "synchronous external abort" errors, ensure the `pci=nomsi` parameter is in your boot arguments
+  - Check that the mini-PCIe card is properly seated in the slot
+  - Verify the card is supported (AR93xx for ath9k, MT7922 for mt7921e)
+  - Some cards may require additional power - ensure adequate power supply
+- **Manual WiFi configuration**:
+  - Load the driver: `modprobe ath9k` (for AR93xx cards)
+  - Scan networks: `iwlist wlan0 scan`
+  - Use NetworkManager or wpa_supplicant for connection management
 
 ## Contributing
 

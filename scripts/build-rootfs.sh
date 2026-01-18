@@ -186,7 +186,7 @@ FSTAB
 # Create boot script for U-Boot
 cat > "${ROOTFS_DIR}/boot/boot.txt" << 'BOOTSCRIPT'
 # ESPRESSOBin boot script
-setenv bootargs "console=ttyMV0,115200 earlycon=ar3700_uart,0xd0012000 root=/dev/mmcblk0p1 rootfstype=ext4 rootwait net.ifnames=0"
+setenv bootargs "console=ttyMV0,115200 earlycon=ar3700_uart,0xd0012000 root=/dev/mmcblk0p1 rootfstype=ext4 rootwait net.ifnames=0 pci=nomsi"
 ext4load mmc 0:1 $kernel_addr_r /boot/Image
 ext4load mmc 0:1 $fdt_addr_r /boot/dtbs/armada-3720-espressobin.dtb
 booti $kernel_addr_r - $fdt_addr_r
