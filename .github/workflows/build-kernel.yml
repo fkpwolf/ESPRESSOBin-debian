@@ -38,7 +38,7 @@ jobs:
     - name: Check output files
       run: |
         ls -la output/
-        du -sh output/* || true
+        du -sh output/*
         echo "Kernel files:"
         ls -la output/kernel/ || echo "No kernel directory found"
         echo "Module files:"
