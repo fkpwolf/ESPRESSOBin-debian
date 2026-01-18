@@ -1,0 +1,56 @@
+name: Build Kernel Only
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-kernel:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Set up QEMU
+      uses: docker/setup-qemu-action@v3
+      with:
+        platforms: all
+
+    - name: Free up disk space
+      run: |
+        sudo apt-get clean
+        sudo rm -rf /usr/share/dotnet
+        sudo rm -rf /opt/ghc
+        sudo rm -rf /usr/local/share/boost
+        df -h
+
+    - name: Build kernel only
+      run: |
+        # Register QEMU on the host for multi-architecture support
+        docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+        # Use the 'make kernel' target which executes scripts/build-kernel.sh in Docker
+        make kernel
+
+    - name: Check output files
+      run: |
+        ls -la output/
+        du -sh output/*
+        echo "Kernel files:"
+        ls -la output/kernel/ || echo "No kernel directory found"
+        echo "Module files:"
+        ls -la output/modules/ || echo "No modules directory found"
+
+    - name: Upload kernel artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: espressobin-kernel
+        path: |
+          output/kernel/
+          output/modules/
+        retention-days: 30
+        if-no-files-found: warn
