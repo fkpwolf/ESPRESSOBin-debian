@@ -192,6 +192,10 @@ If you need to update the SPI flash with new U-Boot:
   - Port lan1: LAN port 2
   - Full DSA (Distributed Switch Architecture) support
   - VLAN support and port isolation
+- ✅ **WiFi support (via Mini-PCIe slot)**
+  - Qualcomm Atheros AR93xx (ath9k driver)
+  - MediaTek MT7922 802.11ax (mt7921e driver)
+  - Firmware packages included (firmware-atheros, firmware-misc-nonfree)
 - ✅ USB 3.0 and USB 2.0 ports
 - ✅ SATA 3.0 connector
 - ✅ microSD card slot

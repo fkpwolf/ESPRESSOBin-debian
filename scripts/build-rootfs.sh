@@ -108,6 +108,8 @@ apt-get update
 # Install packages in smaller batches to avoid issues
 apt-get install -y --no-install-recommends \
     firmware-linux-free \
+    firmware-atheros \
+    firmware-misc-nonfree \
     wireless-tools \
     wpasupplicant \
     network-manager \
